@@ -1,4 +1,5 @@
 import { MetaplexError, MetaplexErrorInputWithoutSource, MetaplexErrorOptions } from '../../errors';
+import { Amount } from '../../types';
 /** @group Errors */
 export declare class AuctionHouseError extends MetaplexError {
     constructor(input: MetaplexErrorInputWithoutSource);
@@ -9,6 +10,10 @@ export declare class TreasuryDestinationOwnerRequiredError extends AuctionHouseE
 }
 /** @group Errors */
 export declare class AuctioneerAuthorityRequiredError extends AuctionHouseError {
+    constructor(options?: MetaplexErrorOptions);
+}
+/** @group Errors */
+export declare class AuctioneerPartialSaleNotSupportedError extends AuctionHouseError {
     constructor(options?: MetaplexErrorOptions);
 }
 /** @group Errors */
@@ -34,4 +39,8 @@ export declare class CreateListingRequiresSignerError extends AuctionHouseError 
 /** @group Errors */
 export declare class WithdrawFromBuyerAccountRequiresSignerError extends AuctionHouseError {
     constructor(options?: MetaplexErrorOptions);
+}
+/** @group Errors */
+export declare class PartialPriceMismatchError extends AuctionHouseError {
+    constructor(expected: Amount, actual: Amount, options?: MetaplexErrorOptions);
 }

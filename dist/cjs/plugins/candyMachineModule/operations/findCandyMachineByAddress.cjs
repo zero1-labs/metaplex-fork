@@ -45,7 +45,10 @@ const findCandyMachineByAddressOperationHandler = {
     Account.assertAccountExists(unparsedAccount);
     const account = accounts.toCandyMachineAccount(unparsedAccount);
     const collectionAccount = accounts.parseCandyMachineCollectionAccount(accounts$1[1]);
-    return CandyMachine.toCandyMachine(account, unparsedAccount, collectionAccount);
+    const mint = account.data.tokenMint ? await metaplex.tokens().findMintByAddress({
+      address: account.data.tokenMint
+    }).run() : null;
+    return CandyMachine.toCandyMachine(account, unparsedAccount, collectionAccount, mint);
   }
 };
 

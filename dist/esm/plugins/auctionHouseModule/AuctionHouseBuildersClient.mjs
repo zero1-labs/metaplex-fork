@@ -3,6 +3,8 @@ import { createBidBuilder } from './operations/createBid.mjs';
 import { createListingBuilder } from './operations/createListing.mjs';
 import { executeSaleBuilder } from './operations/executeSale.mjs';
 import { updateAuctionHouseBuilder } from './operations/updateAuctionHouse.mjs';
+import { cancelBidBuilder } from './operations/cancelBid.mjs';
+import { cancelListingBuilder } from './operations/cancelListing.mjs';
 import { depositToBuyerAccountBuilder } from './operations/depositToBuyerAccount.mjs';
 import { withdrawFromBuyerAccountBuilder } from './operations/withdrawFromBuyerAccount.mjs';
 
@@ -23,6 +25,18 @@ class AuctionHouseBuildersClient {
 
   bid(input) {
     return createBidBuilder(this.metaplex, input);
+  }
+  /** {@inheritDoc cancelBidBuilder} */
+
+
+  cancelBid(input) {
+    return cancelBidBuilder(input);
+  }
+  /** {@inheritDoc cancelListingBuilder} */
+
+
+  cancelListing(input) {
+    return cancelListingBuilder(input);
   }
   /** {@inheritDoc createAuctionHouseBuilder} */
 

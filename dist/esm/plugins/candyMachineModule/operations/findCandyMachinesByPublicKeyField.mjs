@@ -1,3 +1,4 @@
+import { PublicKey } from '@solana/web3.js';
 import { parseCandyMachineAccount, parseCandyMachineCollectionAccount } from '../accounts.mjs';
 import { toCandyMachine } from '../models/CandyMachine.mjs';
 import { findCandyMachineCollectionPda } from '../pdas.mjs';
@@ -5,6 +6,8 @@ import { CandyMachineProgram } from '../program.mjs';
 import { zipMap } from '../../../utils/common.mjs';
 import { useOperation } from '../../../types/Operation.mjs';
 import { UnreachableCaseError } from '../../../errors/SdkError.mjs';
+import { toMint } from '../../tokenModule/models/Mint.mjs';
+import { toMintAccount } from '../../tokenModule/accounts.mjs';
 
 // Operation
 // -----------------
@@ -74,13 +77,27 @@ const findCandyMachinesByPublicKeyFieldOperationHandler = {
 
     const unparsedAccounts = await candyMachineQuery.get();
     scope.throwIfCanceled();
-    const collectionPdas = unparsedAccounts.map(unparsedAccount => findCandyMachineCollectionPda(unparsedAccount.publicKey));
-    const unparsedCollectionAccounts = await metaplex.rpc().getMultipleAccounts(collectionPdas, commitment);
+    const collectionPdas = unparsedAccounts.map(unparsedAccount => findCandyMachineCollectionPda(unparsedAccount.publicKey)); // Find mint details for all unique SPL tokens used
+    // in candy machines that have non-null `tokenMint`
+
+    const parsedAccounts = Object.fromEntries(unparsedAccounts.map(unparsedAccount => [unparsedAccount.publicKey.toString(), parseCandyMachineAccount(unparsedAccount)]));
+    const tokenMints = [...new Set(Object.values(parsedAccounts).map(account => {
+      var _account$data$tokenMi;
+
+      return (_account$data$tokenMi = account.data.tokenMint) === null || _account$data$tokenMi === void 0 ? void 0 : _account$data$tokenMi.toString();
+    }).filter(tokenMint => tokenMint !== undefined))].map(address => new PublicKey(address));
+    const result = await metaplex.rpc().getMultipleAccounts(tokenMints.concat(collectionPdas), commitment);
     scope.throwIfCanceled();
+    const unparsedMintAccounts = result.slice(0, tokenMints.length);
+    const unparsedCollectionAccounts = result.slice(-collectionPdas.length);
+    const mints = Object.fromEntries(unparsedMintAccounts.map(account => [account.publicKey.toString(), toMint(toMintAccount(account))]));
     return zipMap(unparsedAccounts, unparsedCollectionAccounts, (unparsedAccount, unparsedCollectionAccount) => {
-      const account = parseCandyMachineAccount(unparsedAccount);
+      var _parsedAccount$data$t;
+
+      const parsedAccount = parsedAccounts[unparsedAccount.publicKey.toString()];
       const collectionAccount = unparsedCollectionAccount ? parseCandyMachineCollectionAccount(unparsedCollectionAccount) : null;
-      return toCandyMachine(account, unparsedAccount, collectionAccount);
+      const tokenMintAddress = (_parsedAccount$data$t = parsedAccount.data.tokenMint) === null || _parsedAccount$data$t === void 0 ? void 0 : _parsedAccount$data$t.toString();
+      return toCandyMachine(parsedAccount, unparsedAccount, collectionAccount, tokenMintAddress ? mints[tokenMintAddress] : null);
     });
   }
 };

@@ -46,7 +46,7 @@ export declare type ExecuteSaleInput = {
      *
      * This includes, its asset, auction house address, seller, receipt address etc.
      */
-    listing: Pick<Listing, 'asset' | 'auctionHouse' | 'canceledAt' | 'sellerAddress' | 'tradeStateAddress' | 'receiptAddress'>;
+    listing: Pick<Listing, 'asset' | 'auctionHouse' | 'canceledAt' | 'price' | 'receiptAddress' | 'sellerAddress' | 'tokens' | 'tradeStateAddress'>;
     /** The Auction House in which to execute a sale. */
     auctionHouse: AuctionHouse;
     /**

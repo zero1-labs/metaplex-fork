@@ -1,5 +1,5 @@
 import type { Metaplex } from '../../Metaplex';
-import { DepositToBuyerAccountBuilderParams, WithdrawFromBuyerAccountBuilderParams } from './operations';
+import { DepositToBuyerAccountBuilderParams, CancelBidBuilderParams, CancelListingBuilderParams, WithdrawFromBuyerAccountBuilderParams } from './operations';
 import { CreateAuctionHouseBuilderParams } from './operations/createAuctionHouse';
 import { CreateBidBuilderParams } from './operations/createBid';
 import { CreateListingBuilderParams } from './operations/createListing';
@@ -17,6 +17,10 @@ export declare class AuctionHouseBuildersClient {
     constructor(metaplex: Metaplex);
     /** {@inheritDoc createBidBuilder} */
     bid(input: CreateBidBuilderParams): Promise<import("../..").TransactionBuilder<import("./operations").CreateBidBuilderContext>>;
+    /** {@inheritDoc cancelBidBuilder} */
+    cancelBid(input: CancelBidBuilderParams): import("../..").TransactionBuilder<import("./operations").CancelBidBuilderContext>;
+    /** {@inheritDoc cancelListingBuilder} */
+    cancelListing(input: CancelListingBuilderParams): import("../..").TransactionBuilder<import("./operations").CancelListingBuilderContext>;
     /** {@inheritDoc createAuctionHouseBuilder} */
     createAuctionHouse(input: CreateAuctionHouseBuilderParams): import("../..").TransactionBuilder<import("./operations").CreateAuctionHouseBuilderContext>;
     /** {@inheritDoc depositToBuyerAccountBuilder} */

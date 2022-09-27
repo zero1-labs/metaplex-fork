@@ -1,4 +1,5 @@
 import { MetaplexError } from '../../errors/MetaplexError.mjs';
+import { formatAmount } from '../../types/Amount.mjs';
 
 /** @group Errors */
 
@@ -37,6 +38,20 @@ class AuctioneerAuthorityRequiredError extends AuctionHouseError {
       title: 'Auctioneer Authority Required',
       problem: 'You are trying to use or fetch an Auction House which delegates to an Auctioneer authority ' + 'but you have not provided the required "auctioneerAuthority" parameter.',
       solution: 'Please provide the "auctioneerAuthority" parameter so the SDK can figure out which Auctioneer instance to interact with. ' + 'Note that we keep that parameter optional because no Auctioneer Authority is needed for Auction Houses ' + 'that use native Auction House behavior.'
+    });
+  }
+
+}
+/** @group Errors */
+
+class AuctioneerPartialSaleNotSupportedError extends AuctionHouseError {
+  constructor(options) {
+    super({
+      options,
+      key: 'auctioneer_partial_sale_not_supported',
+      title: 'Auctioneer Partial Sale Is Not Supported',
+      problem: 'You are trying to execute a partial sale, but partial orders are not supported in Auctioneer.',
+      solution: 'Any Partial Buys must be executed against a sale listed through the Auction House Sale.'
     });
   }
 
@@ -125,6 +140,20 @@ class WithdrawFromBuyerAccountRequiresSignerError extends AuctionHouseError {
   }
 
 }
+/** @group Errors */
 
-export { AuctionHouseError, AuctioneerAuthorityRequiredError, BidAndListingHaveDifferentAuctionHousesError, BidAndListingHaveDifferentMintsError, CanceledBidIsNotAllowedError, CanceledListingIsNotAllowedError, CreateListingRequiresSignerError, TreasuryDestinationOwnerRequiredError, WithdrawFromBuyerAccountRequiresSignerError };
+class PartialPriceMismatchError extends AuctionHouseError {
+  constructor(expected, actual, options) {
+    super({
+      options,
+      key: 'partial_price_mismatch_signer',
+      title: 'The calculated partial price does not equal the partial price provided',
+      problem: `Expected to receive ${formatAmount(expected)} per SFT but provided ${formatAmount(actual)} per SFT.`,
+      solution: 'The token price must equal the price it has in the listing. ' + 'If executing a partial sale, ' + 'divide the total price by the number of total tokens on sale and multiply it by the number of tokens you want to buy.'
+    });
+  }
+
+}
+
+export { AuctionHouseError, AuctioneerAuthorityRequiredError, AuctioneerPartialSaleNotSupportedError, BidAndListingHaveDifferentAuctionHousesError, BidAndListingHaveDifferentMintsError, CanceledBidIsNotAllowedError, CanceledListingIsNotAllowedError, CreateListingRequiresSignerError, PartialPriceMismatchError, TreasuryDestinationOwnerRequiredError, WithdrawFromBuyerAccountRequiresSignerError };
 //# sourceMappingURL=errors.mjs.map

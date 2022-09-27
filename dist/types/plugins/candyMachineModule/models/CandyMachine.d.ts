@@ -4,6 +4,7 @@ import { Amount, BigNumber, DateTime, UnparsedAccount } from '../../../types';
 import { Option } from '../../../utils';
 import { CandyMachineAccount, MaybeCandyMachineCollectionAccount } from '../accounts';
 import { Creator } from '../../../types';
+import { Mint } from '../../../plugins/tokenModule';
 /**
  * This model contains all the relevant information about a Candy Machine.
  * This includes its settings but also all of the items (a.k.a. config lines)
@@ -303,7 +304,7 @@ export declare const isCandyMachine: (value: any) => value is CandyMachine;
 /** @group Model Helpers */
 export declare function assertCandyMachine(value: any): asserts value is CandyMachine;
 /** @group Model Helpers */
-export declare const toCandyMachine: (account: CandyMachineAccount, unparsedAccount: UnparsedAccount, collectionAccount: MaybeCandyMachineCollectionAccount | null) => CandyMachine;
+export declare const toCandyMachine: (account: CandyMachineAccount, unparsedAccount: UnparsedAccount, collectionAccount: MaybeCandyMachineCollectionAccount | null, mint: Mint | null) => CandyMachine;
 /**
  * This object provides a common interface for the configurations required
  * to create or update Candy Machines.

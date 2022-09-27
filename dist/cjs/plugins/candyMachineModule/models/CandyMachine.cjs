@@ -6,21 +6,10 @@ var mplCandyMachine = require('@metaplex-foundation/mpl-candy-machine');
 var helpers = require('../helpers.cjs');
 var program = require('../program.cjs');
 var assert = require('../../../utils/assert.cjs');
-var BigNumber = require('../../../types/BigNumber.cjs');
 var Amount = require('../../../types/Amount.cjs');
+var BigNumber = require('../../../types/BigNumber.cjs');
 var common = require('../../../utils/common.cjs');
 var DateTime = require('../../../types/DateTime.cjs');
-
-// Model
-// -----------------
-
-/**
- * This model contains all the relevant information about a Candy Machine.
- * This includes its settings but also all of the items (a.k.a. config lines)
- * loaded inside the Candy Machine along with some statistics about the items.
- *
- * @group Models
- */
 
 // -----------------
 // Program to Model
@@ -35,7 +24,8 @@ function assertCandyMachine(value) {
 }
 /** @group Model Helpers */
 
-const toCandyMachine = (account, unparsedAccount, collectionAccount) => {
+const toCandyMachine = (account, unparsedAccount, collectionAccount, mint) => {
+  assert["default"](mint === null || account.data.tokenMint !== null && mint.address.equals(account.data.tokenMint));
   const itemsAvailable = BigNumber.toBigNumber(account.data.data.itemsAvailable);
   const itemsMinted = BigNumber.toBigNumber(account.data.itemsRedeemed);
   const endSettings = account.data.data.endSettings;
@@ -55,8 +45,7 @@ const toCandyMachine = (account, unparsedAccount, collectionAccount) => {
     tokenMintAddress: account.data.tokenMint,
     collectionMintAddress: collectionAccount && collectionAccount.exists ? collectionAccount.data.mint : null,
     uuid: account.data.data.uuid,
-    // TODO(loris): Provide a more accurate Amount if `tokenMintAddress` is not `null`.
-    price: Amount.lamports(account.data.data.price),
+    price: Amount.amount(account.data.data.price, mint ? mint.currency : Amount.SOL),
     symbol: common.removeEmptyChars(account.data.data.symbol),
     sellerFeeBasisPoints: account.data.data.sellerFeeBasisPoints,
     isMutable: account.data.data.isMutable,

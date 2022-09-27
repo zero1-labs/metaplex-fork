@@ -2,21 +2,10 @@ import { EndSettingType } from '@metaplex-foundation/mpl-candy-machine';
 import { countCandyMachineItems, parseCandyMachineItems, getCandyMachineUuidFromAddress } from '../helpers.mjs';
 import { CandyMachineProgram } from '../program.mjs';
 import assert from '../../../utils/assert.mjs';
+import { amount, SOL, lamports } from '../../../types/Amount.mjs';
 import { toBigNumber } from '../../../types/BigNumber.mjs';
-import { lamports } from '../../../types/Amount.mjs';
 import { removeEmptyChars } from '../../../utils/common.mjs';
 import { toOptionDateTime, toDateTime } from '../../../types/DateTime.mjs';
-
-// Model
-// -----------------
-
-/**
- * This model contains all the relevant information about a Candy Machine.
- * This includes its settings but also all of the items (a.k.a. config lines)
- * loaded inside the Candy Machine along with some statistics about the items.
- *
- * @group Models
- */
 
 // -----------------
 // Program to Model
@@ -31,7 +20,8 @@ function assertCandyMachine(value) {
 }
 /** @group Model Helpers */
 
-const toCandyMachine = (account, unparsedAccount, collectionAccount) => {
+const toCandyMachine = (account, unparsedAccount, collectionAccount, mint) => {
+  assert(mint === null || account.data.tokenMint !== null && mint.address.equals(account.data.tokenMint));
   const itemsAvailable = toBigNumber(account.data.data.itemsAvailable);
   const itemsMinted = toBigNumber(account.data.itemsRedeemed);
   const endSettings = account.data.data.endSettings;
@@ -51,8 +41,7 @@ const toCandyMachine = (account, unparsedAccount, collectionAccount) => {
     tokenMintAddress: account.data.tokenMint,
     collectionMintAddress: collectionAccount && collectionAccount.exists ? collectionAccount.data.mint : null,
     uuid: account.data.data.uuid,
-    // TODO(loris): Provide a more accurate Amount if `tokenMintAddress` is not `null`.
-    price: lamports(account.data.data.price),
+    price: amount(account.data.data.price, mint ? mint.currency : SOL),
     symbol: removeEmptyChars(account.data.data.symbol),
     sellerFeeBasisPoints: account.data.data.sellerFeeBasisPoints,
     isMutable: account.data.data.isMutable,

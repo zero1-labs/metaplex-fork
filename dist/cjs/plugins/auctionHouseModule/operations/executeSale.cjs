@@ -117,8 +117,7 @@ const executeSaleBuilder = (metaplex, params) => {
     asset
   } = listing;
   const {
-    buyerAddress,
-    tokens
+    buyerAddress
   } = bid;
   const {
     hasAuctioneer,
@@ -126,8 +125,19 @@ const executeSaleBuilder = (metaplex, params) => {
     treasuryMint,
     address: auctionHouseAddress,
     authorityAddress,
+    feeAccountAddress,
     treasuryAccountAddress
   } = auctionHouse;
+  const isPartialSale = bid.tokens.basisPoints < listing.tokens.basisPoints; // Use full size of listing & price when finding trade state PDA for the partial sale.
+
+  const {
+    tokens,
+    price
+  } = isPartialSale ? listing : bid;
+  const {
+    price: buyerPrice,
+    tokens: buyerTokensSize
+  } = bid;
 
   if (!listing.auctionHouse.address.equals(bid.auctionHouse.address)) {
     throw new errors.BidAndListingHaveDifferentAuctionHousesError();
@@ -147,10 +157,21 @@ const executeSaleBuilder = (metaplex, params) => {
 
   if (hasAuctioneer && !auctioneerAuthority) {
     throw new errors.AuctioneerAuthorityRequiredError();
-  } // Data.
+  }
 
+  if (isPartialSale && hasAuctioneer) {
+    throw new errors.AuctioneerPartialSaleNotSupportedError();
+  }
 
-  const price = isNative ? Amount.lamports(bid.price.basisPoints) : Amount.amount(bid.price.basisPoints, treasuryMint.currency); // Accounts.
+  if (isPartialSale) {
+    const listingPricePerToken = price.basisPoints.div(tokens.basisPoints);
+    const buyerPricePerToken = buyerPrice.basisPoints.div(buyerTokensSize.basisPoints);
+
+    if (!listingPricePerToken.eq(buyerPricePerToken)) {
+      throw new errors.PartialPriceMismatchError(auctionHouse.isNative ? Amount.lamports(listingPricePerToken) : Amount.amount(listingPricePerToken, auctionHouse.treasuryMint.currency), auctionHouse.isNative ? Amount.lamports(buyerPricePerToken) : Amount.amount(buyerPricePerToken, auctionHouse.treasuryMint.currency));
+    }
+  } // Accounts.
+
 
   const sellerPaymentReceiptAccount = isNative ? sellerAddress : pdas.findAssociatedTokenAccountPda(treasuryMint.address, sellerAddress);
   const buyerReceiptTokenAccount = pdas.findAssociatedTokenAccountPda(asset.address, buyerAddress);
@@ -169,7 +190,7 @@ const executeSaleBuilder = (metaplex, params) => {
     buyerReceiptTokenAccount,
     authority: authorityAddress,
     auctionHouse: auctionHouseAddress,
-    auctionHouseFeeAccount: auctionHouse.feeAccountAddress,
+    auctionHouseFeeAccount: feeAccountAddress,
     auctionHouseTreasury: treasuryAccountAddress,
     buyerTradeState: bid.tradeStateAddress,
     sellerTradeState: listing.tradeStateAddress,
@@ -185,13 +206,18 @@ const executeSaleBuilder = (metaplex, params) => {
     tokenSize: tokens.basisPoints
   }; // Execute Sale Instruction
 
-  let executeSaleInstruction = mplAuctionHouse.createExecuteSaleInstruction(accounts, args);
+  const partialSaleArgs = { ...args,
+    partialOrderSize: bid.tokens.basisPoints,
+    partialOrderPrice: bid.price.basisPoints
+  };
+  let executeSaleInstruction = isPartialSale ? mplAuctionHouse.createExecutePartialSaleInstruction(accounts, partialSaleArgs) : mplAuctionHouse.createExecuteSaleInstruction(accounts, args);
 
   if (auctioneerAuthority) {
-    executeSaleInstruction = mplAuctionHouse.createAuctioneerExecuteSaleInstruction({ ...accounts,
+    const auctioneerAccounts = { ...accounts,
       auctioneerAuthority: auctioneerAuthority.publicKey,
       ahAuctioneerPda: pdas$1.findAuctioneerPda(auctionHouseAddress, auctioneerAuthority.publicKey)
-    }, args);
+    };
+    executeSaleInstruction = mplAuctionHouse.createAuctioneerExecuteSaleInstruction(auctioneerAccounts, args);
   } // Provide additional keys to pay royalties.
 
 
@@ -215,7 +241,7 @@ const executeSaleBuilder = (metaplex, params) => {
 
   const executeSaleSigners = [auctioneerAuthority].filter(Signer.isSigner); // Receipt.
 
-  const shouldPrintReceipt = ((_params$printReceipt = params.printReceipt) !== null && _params$printReceipt !== void 0 ? _params$printReceipt : true) && Boolean(listing.receiptAddress && bid.receiptAddress);
+  const shouldPrintReceipt = ((_params$printReceipt = params.printReceipt) !== null && _params$printReceipt !== void 0 ? _params$printReceipt : true) && Boolean(listing.receiptAddress && bid.receiptAddress && !isPartialSale);
   const bookkeeper = (_params$bookkeeper = params.bookkeeper) !== null && _params$bookkeeper !== void 0 ? _params$bookkeeper : metaplex.identity();
   const purchaseReceipt = pdas$1.findPurchaseReceiptPda(listing.tradeStateAddress, bid.tradeStateAddress);
   return TransactionBuilder.TransactionBuilder.make().setContext({
