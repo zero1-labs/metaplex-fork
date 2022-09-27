@@ -42,8 +42,6 @@ export { assertAuctionHouse, assertAuctioneerAuctionHouse, isAuctionHouse, isAuc
 export { assertBid, assertLazyBid, isBid, isLazyBid, toBid, toLazyBid } from './plugins/auctionHouseModule/models/Bid.mjs';
 export { assertLazyListing, assertListing, isLazyListing, isListing, toLazyListing, toListing } from './plugins/auctionHouseModule/models/Listing.mjs';
 export { assertLazyPurchase, assertPurchase, isLazyPurchase, isPurchase, toLazyPurchase, toPurchase } from './plugins/auctionHouseModule/models/Purchase.mjs';
-export { BundlrStorageDriver, isBundlrStorageDriver } from './plugins/bundlrStorage/BundlrStorageDriver.mjs';
-export { bundlrStorage } from './plugins/bundlrStorage/plugin.mjs';
 export { parseCandyMachineAccount, parseCandyMachineCollectionAccount, toCandyMachineAccount, toCandyMachineCollectionAccount } from './plugins/candyMachineModule/accounts.mjs';
 export { CandyMachinesBuildersClient } from './plugins/candyMachineModule/CandyMachinesBuildersClient.mjs';
 export { CandyMachinesClient } from './plugins/candyMachineModule/CandyMachinesClient.mjs';

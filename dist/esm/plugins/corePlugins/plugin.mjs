@@ -5,7 +5,6 @@ import { operationModule } from '../operationModule/plugin.mjs';
 import { programModule } from '../programModule/plugin.mjs';
 import { utilsModule } from '../utilsModule/plugin.mjs';
 import { guestIdentity } from '../guestIdentity/plugin.mjs';
-import { bundlrStorage } from '../bundlrStorage/plugin.mjs';
 import { systemModule } from '../systemModule/plugin.mjs';
 import { tokenModule } from '../tokenModule/plugin.mjs';
 import { nftModule } from '../nftModule/plugin.mjs';
@@ -23,8 +22,8 @@ const corePlugins = () => ({
     metaplex.use(programModule());
     metaplex.use(utilsModule()); // Default drivers.
 
-    metaplex.use(guestIdentity());
-    metaplex.use(bundlrStorage()); // Verticals.
+    metaplex.use(guestIdentity()); // metaplex.use(bundlrStorage());
+    // Verticals.
 
     metaplex.use(systemModule());
     metaplex.use(tokenModule());
